@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+package mafiapb;
+
+message Player {
+    string name = 1;
+    string addr = 2;
+}
+
+message JoinRequest {
+    Player player = 1;
+}
+
+message JoinResponse {
+    string resp = 1;
+}
+
+message MemberListRequest {
+}
+
+message MemberListResponse {
+    repeated string player_names = 1;
+}
+
+service Lobby {
+    rpc Join(JoinRequest) returns (JoinResponse);
+    rpc MemberList(MemberListRequest) returns (MemberListResponse);
+}

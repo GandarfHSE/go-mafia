@@ -19,3 +19,7 @@
 
 # Go workspace file
 go.work
+
+# Binaries for client and server
+app/client/client
+app/server/server
