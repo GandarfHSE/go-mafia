@@ -122,16 +122,14 @@ func (x *JoinRequest) GetPlayer() *Player {
 	return nil
 }
 
-type JoinResponse struct {
+type Empty struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Resp string `protobuf:"bytes,1,opt,name=resp,proto3" json:"resp,omitempty"`
 }
 
-func (x *JoinResponse) Reset() {
-	*x = JoinResponse{}
+func (x *Empty) Reset() {
+	*x = Empty{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_mafia_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -139,13 +137,13 @@ func (x *JoinResponse) Reset() {
 	}
 }
 
-func (x *JoinResponse) String() string {
+func (x *Empty) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*JoinResponse) ProtoMessage() {}
+func (*Empty) ProtoMessage() {}
 
-func (x *JoinResponse) ProtoReflect() protoreflect.Message {
+func (x *Empty) ProtoReflect() protoreflect.Message {
 	mi := &file_mafia_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -157,54 +155,9 @@ func (x *JoinResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use JoinResponse.ProtoReflect.Descriptor instead.
-func (*JoinResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
 	return file_mafia_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *JoinResponse) GetResp() string {
-	if x != nil {
-		return x.Resp
-	}
-	return ""
-}
-
-type MemberListRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *MemberListRequest) Reset() {
-	*x = MemberListRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_mafia_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MemberListRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MemberListRequest) ProtoMessage() {}
-
-func (x *MemberListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mafia_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MemberListRequest.ProtoReflect.Descriptor instead.
-func (*MemberListRequest) Descriptor() ([]byte, []int) {
-	return file_mafia_proto_rawDescGZIP(), []int{3}
 }
 
 type MemberListResponse struct {
@@ -218,7 +171,7 @@ type MemberListResponse struct {
 func (x *MemberListResponse) Reset() {
 	*x = MemberListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mafia_proto_msgTypes[4]
+		mi := &file_mafia_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -231,7 +184,7 @@ func (x *MemberListResponse) String() string {
 func (*MemberListResponse) ProtoMessage() {}
 
 func (x *MemberListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mafia_proto_msgTypes[4]
+	mi := &file_mafia_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -244,12 +197,114 @@ func (x *MemberListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MemberListResponse.ProtoReflect.Descriptor instead.
 func (*MemberListResponse) Descriptor() ([]byte, []int) {
-	return file_mafia_proto_rawDescGZIP(), []int{4}
+	return file_mafia_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *MemberListResponse) GetPlayerNames() []string {
 	if x != nil {
 		return x.PlayerNames
+	}
+	return nil
+}
+
+type SendMessageRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Msg    string  `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	Player *Player `protobuf:"bytes,2,opt,name=player,proto3" json:"player,omitempty"`
+}
+
+func (x *SendMessageRequest) Reset() {
+	*x = SendMessageRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mafia_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SendMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendMessageRequest) ProtoMessage() {}
+
+func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mafia_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendMessageRequest.ProtoReflect.Descriptor instead.
+func (*SendMessageRequest) Descriptor() ([]byte, []int) {
+	return file_mafia_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SendMessageRequest) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *SendMessageRequest) GetPlayer() *Player {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+type ExitRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Player *Player `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+}
+
+func (x *ExitRequest) Reset() {
+	*x = ExitRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mafia_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ExitRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExitRequest) ProtoMessage() {}
+
+func (x *ExitRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mafia_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExitRequest.ProtoReflect.Descriptor instead.
+func (*ExitRequest) Descriptor() ([]byte, []int) {
+	return file_mafia_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ExitRequest) GetPlayer() *Player {
+	if x != nil {
+		return x.Player
 	}
 	return nil
 }
@@ -265,22 +320,33 @@ var file_mafia_proto_rawDesc = []byte{
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x06, 0x70, 0x6c, 0x61, 0x79, 0x65,
 	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70,
 	0x62, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x06, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72,
-	0x22, 0x22, 0x0a, 0x0c, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x12, 0x0a, 0x04, 0x72, 0x65, 0x73, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
-	0x72, 0x65, 0x73, 0x70, 0x22, 0x13, 0x0a, 0x11, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x4c, 0x69,
-	0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x37, 0x0a, 0x12, 0x4d, 0x65, 0x6d,
+	0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x37, 0x0a, 0x12, 0x4d, 0x65, 0x6d,
 	0x62, 0x65, 0x72, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x21, 0x0a, 0x0c, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18,
 	0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4e, 0x61, 0x6d,
-	0x65, 0x73, 0x32, 0x83, 0x01, 0x0a, 0x05, 0x4c, 0x6f, 0x62, 0x62, 0x79, 0x12, 0x33, 0x0a, 0x04,
-	0x4a, 0x6f, 0x69, 0x6e, 0x12, 0x14, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x4a,
-	0x6f, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6d, 0x61, 0x66,
-	0x69, 0x61, 0x70, 0x62, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x45, 0x0a, 0x0a, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x4c, 0x69, 0x73, 0x74, 0x12,
-	0x1a, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72,
-	0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1b, 0x2e, 0x6d, 0x61,
-	0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x4c, 0x69, 0x73, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x10, 0x5a, 0x0e, 0x69, 0x6e, 0x74, 0x65,
+	0x65, 0x73, 0x22, 0x4f, 0x0a, 0x12, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x12, 0x27, 0x0a, 0x06, 0x70, 0x6c,
+	0x61, 0x79, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x6d, 0x61, 0x66,
+	0x69, 0x61, 0x70, 0x62, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x06, 0x70, 0x6c, 0x61,
+	0x79, 0x65, 0x72, 0x22, 0x36, 0x0a, 0x0b, 0x45, 0x78, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x27, 0x0a, 0x06, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x50, 0x6c, 0x61,
+	0x79, 0x65, 0x72, 0x52, 0x06, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x32, 0xda, 0x01, 0x0a, 0x05,
+	0x4c, 0x6f, 0x62, 0x62, 0x79, 0x12, 0x2c, 0x0a, 0x04, 0x4a, 0x6f, 0x69, 0x6e, 0x12, 0x14, 0x2e,
+	0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x45, 0x6d,
+	0x70, 0x74, 0x79, 0x12, 0x39, 0x0a, 0x0a, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x4c, 0x69, 0x73,
+	0x74, 0x12, 0x0e, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x45, 0x6d, 0x70, 0x74,
+	0x79, 0x1a, 0x1b, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x4d, 0x65, 0x6d, 0x62,
+	0x65, 0x72, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3a,
+	0x0a, 0x0b, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x1b, 0x2e,
+	0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x6d, 0x61, 0x66,
+	0x69, 0x61, 0x70, 0x62, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x2c, 0x0a, 0x04, 0x45, 0x78,
+	0x69, 0x74, 0x12, 0x14, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61, 0x70, 0x62, 0x2e, 0x45, 0x78, 0x69,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x6d, 0x61, 0x66, 0x69, 0x61,
+	0x70, 0x62, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x10, 0x5a, 0x0e, 0x69, 0x6e, 0x74, 0x65,
 	0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x33,
 }
@@ -297,25 +363,32 @@ func file_mafia_proto_rawDescGZIP() []byte {
 	return file_mafia_proto_rawDescData
 }
 
-var file_mafia_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_mafia_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_mafia_proto_goTypes = []interface{}{
 	(*Player)(nil),             // 0: mafiapb.Player
 	(*JoinRequest)(nil),        // 1: mafiapb.JoinRequest
-	(*JoinResponse)(nil),       // 2: mafiapb.JoinResponse
-	(*MemberListRequest)(nil),  // 3: mafiapb.MemberListRequest
-	(*MemberListResponse)(nil), // 4: mafiapb.MemberListResponse
+	(*Empty)(nil),              // 2: mafiapb.Empty
+	(*MemberListResponse)(nil), // 3: mafiapb.MemberListResponse
+	(*SendMessageRequest)(nil), // 4: mafiapb.SendMessageRequest
+	(*ExitRequest)(nil),        // 5: mafiapb.ExitRequest
 }
 var file_mafia_proto_depIdxs = []int32{
 	0, // 0: mafiapb.JoinRequest.player:type_name -> mafiapb.Player
-	1, // 1: mafiapb.Lobby.Join:input_type -> mafiapb.JoinRequest
-	3, // 2: mafiapb.Lobby.MemberList:input_type -> mafiapb.MemberListRequest
-	2, // 3: mafiapb.Lobby.Join:output_type -> mafiapb.JoinResponse
-	4, // 4: mafiapb.Lobby.MemberList:output_type -> mafiapb.MemberListResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 1: mafiapb.SendMessageRequest.player:type_name -> mafiapb.Player
+	0, // 2: mafiapb.ExitRequest.player:type_name -> mafiapb.Player
+	1, // 3: mafiapb.Lobby.Join:input_type -> mafiapb.JoinRequest
+	2, // 4: mafiapb.Lobby.MemberList:input_type -> mafiapb.Empty
+	4, // 5: mafiapb.Lobby.SendMessage:input_type -> mafiapb.SendMessageRequest
+	5, // 6: mafiapb.Lobby.Exit:input_type -> mafiapb.ExitRequest
+	2, // 7: mafiapb.Lobby.Join:output_type -> mafiapb.Empty
+	3, // 8: mafiapb.Lobby.MemberList:output_type -> mafiapb.MemberListResponse
+	2, // 9: mafiapb.Lobby.SendMessage:output_type -> mafiapb.Empty
+	2, // 10: mafiapb.Lobby.Exit:output_type -> mafiapb.Empty
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_mafia_proto_init() }
@@ -349,7 +422,7 @@ func file_mafia_proto_init() {
 			}
 		}
 		file_mafia_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*JoinResponse); i {
+			switch v := v.(*Empty); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -361,7 +434,7 @@ func file_mafia_proto_init() {
 			}
 		}
 		file_mafia_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MemberListRequest); i {
+			switch v := v.(*MemberListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -373,7 +446,19 @@ func file_mafia_proto_init() {
 			}
 		}
 		file_mafia_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MemberListResponse); i {
+			switch v := v.(*SendMessageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mafia_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ExitRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -391,7 +476,7 @@ func file_mafia_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mafia_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

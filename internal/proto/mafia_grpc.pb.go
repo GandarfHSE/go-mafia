@@ -22,8 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LobbyClient interface {
-	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error)
-	MemberList(ctx context.Context, in *MemberListRequest, opts ...grpc.CallOption) (*MemberListResponse, error)
+	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*Empty, error)
+	MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error)
+	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error)
+	Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type lobbyClient struct {
@@ -34,8 +36,8 @@ func NewLobbyClient(cc grpc.ClientConnInterface) LobbyClient {
 	return &lobbyClient{cc}
 }
 
-func (c *lobbyClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error) {
-	out := new(JoinResponse)
+func (c *lobbyClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/mafiapb.Lobby/Join", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,9 +45,27 @@ func (c *lobbyClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *lobbyClient) MemberList(ctx context.Context, in *MemberListRequest, opts ...grpc.CallOption) (*MemberListResponse, error) {
+func (c *lobbyClient) MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error) {
 	out := new(MemberListResponse)
 	err := c.cc.Invoke(ctx, "/mafiapb.Lobby/MemberList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lobbyClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Lobby/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lobbyClient) Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Lobby/Exit", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +76,10 @@ func (c *lobbyClient) MemberList(ctx context.Context, in *MemberListRequest, opt
 // All implementations must embed UnimplementedLobbyServer
 // for forward compatibility
 type LobbyServer interface {
-	Join(context.Context, *JoinRequest) (*JoinResponse, error)
-	MemberList(context.Context, *MemberListRequest) (*MemberListResponse, error)
+	Join(context.Context, *JoinRequest) (*Empty, error)
+	MemberList(context.Context, *Empty) (*MemberListResponse, error)
+	SendMessage(context.Context, *SendMessageRequest) (*Empty, error)
+	Exit(context.Context, *ExitRequest) (*Empty, error)
 	mustEmbedUnimplementedLobbyServer()
 }
 
@@ -65,11 +87,17 @@ type LobbyServer interface {
 type UnimplementedLobbyServer struct {
 }
 
-func (UnimplementedLobbyServer) Join(context.Context, *JoinRequest) (*JoinResponse, error) {
+func (UnimplementedLobbyServer) Join(context.Context, *JoinRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
 }
-func (UnimplementedLobbyServer) MemberList(context.Context, *MemberListRequest) (*MemberListResponse, error) {
+func (UnimplementedLobbyServer) MemberList(context.Context, *Empty) (*MemberListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MemberList not implemented")
+}
+func (UnimplementedLobbyServer) SendMessage(context.Context, *SendMessageRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedLobbyServer) Exit(context.Context, *ExitRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Exit not implemented")
 }
 func (UnimplementedLobbyServer) mustEmbedUnimplementedLobbyServer() {}
 
@@ -103,7 +131,7 @@ func _Lobby_Join_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Lobby_MemberList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MemberListRequest)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +143,43 @@ func _Lobby_MemberList_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/mafiapb.Lobby/MemberList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LobbyServer).MemberList(ctx, req.(*MemberListRequest))
+		return srv.(LobbyServer).MemberList(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lobby_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LobbyServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Lobby/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LobbyServer).SendMessage(ctx, req.(*SendMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lobby_Exit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LobbyServer).Exit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Lobby/Exit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LobbyServer).Exit(ctx, req.(*ExitRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -134,6 +198,14 @@ var Lobby_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MemberList",
 			Handler:    _Lobby_MemberList_Handler,
+		},
+		{
+			MethodName: "SendMessage",
+			Handler:    _Lobby_SendMessage_Handler,
+		},
+		{
+			MethodName: "Exit",
+			Handler:    _Lobby_Exit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

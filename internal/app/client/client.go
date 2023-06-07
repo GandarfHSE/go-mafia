@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/GandarfHSE/go-mafia/internal/proto"
@@ -49,7 +50,22 @@ func (c *LobbyClient) serveChat() {
 			break
 		}
 		str := string(buf[0:msgLen])
-		c.w.Println(str)
+		splittedMsg := strings.Split(str, "##")
+
+		if len(splittedMsg) < 2 {
+			fmt.Printf("len(splittedMsg) < 2!")
+			continue
+		}
+
+		writer := color.New(color.FgHiWhite)
+		switch splittedMsg[0] {
+		case "server":
+			writer = color.New(color.FgWhite)
+		case c.player.Addr:
+			continue
+		}
+		writer.Println(splittedMsg[1])
+		c.w.Print("> ")
 	}
 }
 
@@ -102,7 +118,48 @@ func (c *LobbyClient) Run() {
 	c.ConnectToLobby()
 	for {
 		var cmd string
-		c.w.Print("> ")
+		c.w.Print("Введите команду или сообщение в чат:\n> ")
 		fmt.Scan(&cmd)
+
+		switch cmd {
+		case "!help":
+			c.w.Print("Список команд:\n" +
+				"!help - Вывести это сообщение\n" +
+				"!list - Вывести список всех игроков\n" +
+				"!exit - Выйти из игры\n")
+		case "!list":
+			resp, err := c.client.MemberList(context.TODO(), &proto.Empty{})
+			if err != nil {
+				log.Printf("MemberList error: %v\n", err)
+				continue
+			}
+
+			c.w.Printf("Игроков в лобби: [%v/4]\n", len(resp.PlayerNames))
+			for ind, name := range resp.PlayerNames {
+				c.w.Printf("%v. %v\n", ind+1, name)
+			}
+		case "!exit":
+			_, err := c.client.Exit(context.TODO(), &proto.ExitRequest{Player: &c.player})
+			if err != nil {
+				log.Printf("Exit err: %v\n", err)
+			}
+			return
+		default:
+			if len(cmd) == 0 {
+				continue
+			}
+			if cmd[0] == '!' {
+				c.w.Print("Неправильная команда! Введите !help для списка команд\n\n")
+				continue
+			}
+
+			_, err := c.client.SendMessage(context.TODO(), &proto.SendMessageRequest{Msg: cmd, Player: &c.player})
+			if err != nil {
+				log.Printf("Can't send msg, error: %v\n", err)
+				continue
+			}
+		}
+
+		c.w.Print("\n")
 	}
 }

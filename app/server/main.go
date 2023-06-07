@@ -25,6 +25,8 @@ func main() {
 	log.Printf("Listening on localhost:8085....")
 
 	lobbyServer := server.CreateLobbyServer()
+	defer lobbyServer.Close()
+
 	grpcServer := grpc.NewServer()
 	proto.RegisterLobbyServer(grpcServer, lobbyServer)
 	log.Printf("Serving grpc server...")

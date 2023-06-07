@@ -13,18 +13,25 @@ message JoinRequest {
     Player player = 1;
 }
 
-message JoinResponse {
-    string resp = 1;
-}
-
-message MemberListRequest {
+message Empty {
 }
 
 message MemberListResponse {
     repeated string player_names = 1;
 }
 
+message SendMessageRequest {
+    string msg = 1;
+    Player player = 2;
+}
+
+message ExitRequest {
+    Player player = 1;
+}
+
 service Lobby {
-    rpc Join(JoinRequest) returns (JoinResponse);
-    rpc MemberList(MemberListRequest) returns (MemberListResponse);
+    rpc Join(JoinRequest) returns (Empty);
+    rpc MemberList(Empty) returns (MemberListResponse);
+    rpc SendMessage(SendMessageRequest) returns (Empty);
+    rpc Exit(ExitRequest) returns (Empty);
 }
