@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/GandarfHSE/go-mafia/internal/app/server"
+	server "github.com/GandarfHSE/go-mafia/internal/app/server/lobby"
 	"github.com/GandarfHSE/go-mafia/internal/proto"
 	"google.golang.org/grpc"
 )

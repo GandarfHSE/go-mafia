@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	client "github.com/GandarfHSE/go-mafia/internal/app/client/game"
 	"github.com/GandarfHSE/go-mafia/internal/proto"
 	"github.com/GandarfHSE/go-mafia/internal/utils/terminal"
 	"github.com/fatih/color"
@@ -20,8 +21,11 @@ type LobbyClient struct {
 	client   proto.LobbyClient
 	grpcConn *grpc.ClientConn
 	chatConn *net.UDPConn
-	player   proto.Player
-	w        *color.Color
+
+	player proto.Player
+	w      *color.Color
+
+	gameClient *client.GameClient
 }
 
 func CreateLobbyClient() *LobbyClient {
@@ -35,10 +39,11 @@ func CreateLobbyClient() *LobbyClient {
 	cli := proto.NewLobbyClient(grpcConn)
 
 	return &LobbyClient{
-		client:   cli,
-		grpcConn: grpcConn,
-		player:   proto.Player{},
-		w:        color.New(color.FgHiRed, color.Italic, color.Bold),
+		client:     cli,
+		grpcConn:   grpcConn,
+		player:     proto.Player{},
+		w:          color.New(color.FgHiRed, color.Italic, color.Bold),
+		gameClient: nil,
 	}
 }
 
@@ -69,6 +74,15 @@ func (c *LobbyClient) serveChat() {
 	}
 }
 
+func (c *LobbyClient) WaitForGame() {
+	resp, err := c.client.SubscribeToGame(context.TODO(), &proto.Empty{})
+	if err != nil {
+		log.Fatal("Can't connect to game!")
+	}
+
+	c.gameClient = client.CreateGameClient(resp.GameAddr, &c.player)
+}
+
 func (c *LobbyClient) ConnectToLobby() {
 	c.w.Println("Подключаюсь к лобби...")
 
@@ -91,6 +105,7 @@ func (c *LobbyClient) ConnectToLobby() {
 		log.Fatal("Can't connect to chat!")
 	}
 
+	go c.WaitForGame()
 	_, err = c.client.Join(context.TODO(), &proto.JoinRequest{Player: &c.player})
 	if err != nil {
 		log.Fatal("err in join")
@@ -121,6 +136,21 @@ func (c *LobbyClient) Run() {
 		c.w.Print("Введите команду или сообщение в чат:\n> ")
 		fmt.Scan(&cmd)
 
+		if c.gameClient != nil {
+			f := c.gameClient.Run()
+			c.gameClient.Close()
+			c.gameClient = nil
+			if f {
+				return
+			}
+
+			_, err := c.client.Join(context.TODO(), &proto.JoinRequest{Player: &c.player})
+			if err != nil {
+				log.Fatal("err in join")
+			}
+		}
+
+		// [TODO]: Make command pack
 		switch cmd {
 		case "!help":
 			c.w.Print("Список команд:\n" +

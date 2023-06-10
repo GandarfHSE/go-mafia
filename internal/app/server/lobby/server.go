@@ -5,12 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"sync"
+	"time"
 
+	game "github.com/GandarfHSE/go-mafia/internal/app/server/game"
 	"github.com/GandarfHSE/go-mafia/internal/proto"
+	"github.com/GandarfHSE/go-mafia/internal/utils/algo"
 	"github.com/GandarfHSE/go-mafia/internal/utils/player"
-	"github.com/GandarfHSE/go-mafia/internal/utils/role"
+	"google.golang.org/grpc"
+)
+
+const (
+	GamePlayers int = 4
 )
 
 type LobbyServer struct {
@@ -18,12 +26,18 @@ type LobbyServer struct {
 
 	players []player.Player
 	mu      sync.Mutex
+
+	gameWG   sync.WaitGroup
+	gameAddr string
 }
 
 func CreateLobbyServer() *LobbyServer {
-	return &LobbyServer{
-		players: nil,
+	lobby := &LobbyServer{
+		players:  nil,
+		gameAddr: "",
 	}
+	lobby.gameWG.Add(GamePlayers)
+	return lobby
 }
 
 func (s *LobbyServer) Close() {
@@ -38,12 +52,14 @@ func (s *LobbyServer) addPlayer(pbplayer *proto.Player) error {
 	}
 
 	newPlayer := player.Player{
-		Name: pbplayer.Name,
-		Addr: pbplayer.Addr,
-		Conn: conn,
-		Role: role.CreateRole("roleless"),
+		Name:  pbplayer.Name,
+		Addr:  pbplayer.Addr,
+		Conn:  conn,
+		Role:  "anon",
+		Alive: true,
 	}
 	s.players = append(s.players, newPlayer)
+
 	return nil
 }
 
@@ -74,10 +90,17 @@ func (s *LobbyServer) Join(_ context.Context, req *proto.JoinRequest) (*proto.Em
 
 	msg := fmt.Sprintf("Игрок %v успешно присоединился к лобби!", req.Player.Name)
 	s.broadcastMsgFromPlayer(msg, req.Player.Addr, req.Player.Name)
+
+	if len(s.players) == GamePlayers {
+		// start game
+		s.PrepareGame()
+	}
+	s.gameWG.Done()
+
 	return &proto.Empty{}, nil
 }
 
-func (s *LobbyServer) MemberList(_ context.Context, _ *proto.Empty) (*proto.MemberListResponse, error) {
+func (s *LobbyServer) MemberList(ctx context.Context, _ *proto.Empty) (*proto.MemberListResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -97,6 +120,9 @@ func (s *LobbyServer) SendMessage(_ context.Context, req *proto.SendMessageReque
 }
 
 func (s *LobbyServer) Exit(_ context.Context, req *proto.ExitRequest) (*proto.Empty, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if len(s.players) <= 0 {
 		return nil, errors.New("Weird shit")
 	}
@@ -113,10 +139,46 @@ func (s *LobbyServer) Exit(_ context.Context, req *proto.ExitRequest) (*proto.Em
 		return nil, errors.New("Player is not found!")
 	}
 
-	s.players[pind] = s.players[len(s.players)-1]
-	s.players = s.players[:len(s.players)-1]
+	s.players = algo.Erase(s.players, pind)
 
 	s.broadcastMsgFromPlayer(fmt.Sprintf("Игрок %v отключился!", req.Player.Name), req.Player.Addr, req.Player.Name)
 
 	return &proto.Empty{}, nil
+}
+
+func (s *LobbyServer) SubscribeToGame(_ context.Context, _ *proto.Empty) (*proto.SubscribeToGameResponse, error) {
+	s.gameWG.Wait()
+	time.Sleep(time.Second)
+	defer s.gameWG.Add(1)
+	return &proto.SubscribeToGameResponse{GameAddr: s.gameAddr}, nil
+}
+
+func (s *LobbyServer) PrepareGame() {
+	log.Println("Preparing game...")
+
+	rnd := rand.New(rand.NewSource(time.Now().Unix()))
+
+	var lis net.Listener
+	var err error
+
+	for i := 0; i < 5; i++ {
+		// [TODO] Get this from config
+		port := 9000 + rnd.Uint32()%2000
+		s.gameAddr = fmt.Sprintf("localhost:%v", port)
+		lis, err = net.Listen("tcp", s.gameAddr)
+		if err == nil {
+			break
+		}
+	}
+	log.Printf("Start game server at %v\n", s.gameAddr)
+
+	gameServer := game.CreateGameServer(s.players)
+	grpcServer := grpc.NewServer()
+	proto.RegisterGameServer(grpcServer, gameServer)
+	go func() {
+		grpcServer.Serve(lis)
+		gameServer.Close()
+	}()
+	s.broadcastMsgFromServer("Лобби заполнено, введите любое сообщение для перехода в игровую комнату...")
+	s.players = nil
 }

@@ -26,6 +26,7 @@ type LobbyClient interface {
 	MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error)
 	Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error)
+	SubscribeToGame(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SubscribeToGameResponse, error)
 }
 
 type lobbyClient struct {
@@ -72,6 +73,15 @@ func (c *lobbyClient) Exit(ctx context.Context, in *ExitRequest, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *lobbyClient) SubscribeToGame(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SubscribeToGameResponse, error) {
+	out := new(SubscribeToGameResponse)
+	err := c.cc.Invoke(ctx, "/mafiapb.Lobby/SubscribeToGame", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LobbyServer is the server API for Lobby service.
 // All implementations must embed UnimplementedLobbyServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type LobbyServer interface {
 	MemberList(context.Context, *Empty) (*MemberListResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*Empty, error)
 	Exit(context.Context, *ExitRequest) (*Empty, error)
+	SubscribeToGame(context.Context, *Empty) (*SubscribeToGameResponse, error)
 	mustEmbedUnimplementedLobbyServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedLobbyServer) SendMessage(context.Context, *SendMessageRequest
 }
 func (UnimplementedLobbyServer) Exit(context.Context, *ExitRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exit not implemented")
+}
+func (UnimplementedLobbyServer) SubscribeToGame(context.Context, *Empty) (*SubscribeToGameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubscribeToGame not implemented")
 }
 func (UnimplementedLobbyServer) mustEmbedUnimplementedLobbyServer() {}
 
@@ -184,6 +198,24 @@ func _Lobby_Exit_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Lobby_SubscribeToGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LobbyServer).SubscribeToGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Lobby/SubscribeToGame",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LobbyServer).SubscribeToGame(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Lobby_ServiceDesc is the grpc.ServiceDesc for Lobby service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,204 @@ var Lobby_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Exit",
 			Handler:    _Lobby_Exit_Handler,
+		},
+		{
+			MethodName: "SubscribeToGame",
+			Handler:    _Lobby_SubscribeToGame_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "mafia.proto",
+}
+
+// GameClient is the client API for Game service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type GameClient interface {
+	MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error)
+	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error)
+	Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error)
+	Role(ctx context.Context, in *RoleRequest, opts ...grpc.CallOption) (*RoleResponse, error)
+}
+
+type gameClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewGameClient(cc grpc.ClientConnInterface) GameClient {
+	return &gameClient{cc}
+}
+
+func (c *gameClient) MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error) {
+	out := new(MemberListResponse)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/MemberList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/Exit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) Role(ctx context.Context, in *RoleRequest, opts ...grpc.CallOption) (*RoleResponse, error) {
+	out := new(RoleResponse)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/Role", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GameServer is the server API for Game service.
+// All implementations must embed UnimplementedGameServer
+// for forward compatibility
+type GameServer interface {
+	MemberList(context.Context, *Empty) (*MemberListResponse, error)
+	SendMessage(context.Context, *SendMessageRequest) (*Empty, error)
+	Exit(context.Context, *ExitRequest) (*Empty, error)
+	Role(context.Context, *RoleRequest) (*RoleResponse, error)
+	mustEmbedUnimplementedGameServer()
+}
+
+// UnimplementedGameServer must be embedded to have forward compatible implementations.
+type UnimplementedGameServer struct {
+}
+
+func (UnimplementedGameServer) MemberList(context.Context, *Empty) (*MemberListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MemberList not implemented")
+}
+func (UnimplementedGameServer) SendMessage(context.Context, *SendMessageRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedGameServer) Exit(context.Context, *ExitRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Exit not implemented")
+}
+func (UnimplementedGameServer) Role(context.Context, *RoleRequest) (*RoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Role not implemented")
+}
+func (UnimplementedGameServer) mustEmbedUnimplementedGameServer() {}
+
+// UnsafeGameServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to GameServer will
+// result in compilation errors.
+type UnsafeGameServer interface {
+	mustEmbedUnimplementedGameServer()
+}
+
+func RegisterGameServer(s grpc.ServiceRegistrar, srv GameServer) {
+	s.RegisterService(&Game_ServiceDesc, srv)
+}
+
+func _Game_MemberList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).MemberList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/MemberList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).MemberList(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).SendMessage(ctx, req.(*SendMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_Exit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).Exit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/Exit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).Exit(ctx, req.(*ExitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_Role_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).Role(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/Role",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).Role(ctx, req.(*RoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Game_ServiceDesc is the grpc.ServiceDesc for Game service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Game_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "mafiapb.Game",
+	HandlerType: (*GameServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "MemberList",
+			Handler:    _Game_MemberList_Handler,
+		},
+		{
+			MethodName: "SendMessage",
+			Handler:    _Game_SendMessage_Handler,
+		},
+		{
+			MethodName: "Exit",
+			Handler:    _Game_Exit_Handler,
+		},
+		{
+			MethodName: "Role",
+			Handler:    _Game_Role_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

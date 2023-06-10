@@ -29,9 +29,37 @@ message ExitRequest {
     Player player = 1;
 }
 
+message SubscribeToGameResponse {
+    string GameAddr = 1;
+}
+
+message RoleRequest {
+    Player player = 1;
+}
+
+message RoleResponse {
+    string role = 1;
+}
+
 service Lobby {
     rpc Join(JoinRequest) returns (Empty);
     rpc MemberList(Empty) returns (MemberListResponse);
     rpc SendMessage(SendMessageRequest) returns (Empty);
     rpc Exit(ExitRequest) returns (Empty);
+
+    rpc SubscribeToGame(Empty) returns (SubscribeToGameResponse);
+}
+
+service Game {
+    rpc MemberList(Empty) returns (MemberListResponse);
+    rpc SendMessage(SendMessageRequest) returns (Empty);
+    rpc Exit(ExitRequest) returns (Empty);
+
+    rpc Role(RoleRequest) returns (RoleResponse);
+
+    // vote
+    // kill
+    // check
+    // show
+    // subscribe?
 }

@@ -3,15 +3,15 @@ package player
 import (
 	"fmt"
 	"net"
-
-	"github.com/GandarfHSE/go-mafia/internal/utils/role"
 )
 
 type Player struct {
 	Name string
 	Addr string
 	Conn net.Conn
-	Role role.Role
+
+	Role  string
+	Alive bool
 }
 
 // [TODO] make version with color
