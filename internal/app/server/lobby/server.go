@@ -15,6 +15,7 @@ import (
 	"github.com/GandarfHSE/go-mafia/internal/utils/algo"
 	"github.com/GandarfHSE/go-mafia/internal/utils/player"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
 )
 
 const (
@@ -80,9 +81,23 @@ func (s *LobbyServer) broadcastMsgFromServer(msg string) {
 	s.broadcastMsg(fmt.Sprintf("server##[server] %v", msg))
 }
 
-func (s *LobbyServer) Join(_ context.Context, req *proto.JoinRequest) (*proto.Empty, error) {
+func (s *LobbyServer) Join(ctx context.Context, req *proto.JoinRequest) (*proto.Empty, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	log.Printf("Join request from %v with addr %v\n", req.Player.Name, req.Player.Addr)
+
+	p, _ := peer.FromContext(ctx)
+	port := 0
+	fmt.Sscanf(req.Player.Addr, ":%d", &port)
+	switch addr := p.Addr.(type) {
+	case *net.UDPAddr:
+		addr.Port = port
+		req.Player.Addr = addr.String()
+	case *net.TCPAddr:
+		addr.Port = port
+		req.Player.Addr = addr.String()
+	}
 
 	err := s.addPlayer(req.Player)
 	if err != nil {
@@ -165,7 +180,7 @@ func (s *LobbyServer) PrepareGame() {
 	for i := 0; i < 5; i++ {
 		// [TODO] Get this from config
 		port := 9000 + rnd.Uint32()%2000
-		s.gameAddr = fmt.Sprintf("localhost:%v", port)
+		s.gameAddr = fmt.Sprintf(":%v", port)
 		lis, err = net.Listen("tcp", s.gameAddr)
 		if err == nil {
 			break

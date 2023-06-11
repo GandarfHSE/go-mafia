@@ -14,15 +14,16 @@ import (
 )
 
 func main() {
+	log.Printf("Hi!")
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
 	// [TODO] Get server port from config
-	lis, err := net.Listen("tcp", "localhost:8085")
+	lis, err := net.Listen("tcp", ":8085")
 	if err != nil {
 		log.Fatal("Failed to listen!")
 	}
-	log.Printf("Listening on localhost:8085....")
+	log.Printf("Listening on :8085....")
 
 	lobbyServer := server.CreateLobbyServer()
 	defer lobbyServer.Close()

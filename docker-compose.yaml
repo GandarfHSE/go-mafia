@@ -1,0 +1,12 @@
+version: '3.5'
+
+services:
+  backend:
+    container_name: backend
+    image: server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+      - "9000-11000:9000-11000"

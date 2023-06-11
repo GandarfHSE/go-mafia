@@ -35,7 +35,7 @@ type LobbyClient struct {
 
 func CreateLobbyClient() *LobbyClient {
 	// [TODO] Get server port from config
-	serverAddr := "localhost:8085"
+	serverAddr := ":8085"
 	grpcConn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to server at addr %v!", serverAddr)
@@ -97,10 +97,10 @@ func (c *LobbyClient) ConnectToLobby() {
 	rnd := rand.New(rand.NewSource(time.Now().Unix()))
 	var err error
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		// [TODO] Get this from config
 		port := 2000 + rnd.Uint32()%2000
-		c.player.Addr = fmt.Sprintf("localhost:%v", port)
+		c.player.Addr = fmt.Sprintf(":%v", port)
 		c.chatConn, err = net.ListenUDP("udp", &net.UDPAddr{Port: int(port)})
 		if err == nil {
 			break
@@ -116,7 +116,7 @@ func (c *LobbyClient) ConnectToLobby() {
 	go c.WaitForGame()
 	_, err = c.client.Join(context.TODO(), &proto.JoinRequest{Player: &c.player})
 	if err != nil {
-		log.Fatal("err in join")
+		log.Fatalf("err in join, err = %v", err)
 	}
 
 	c.w.Print("Подключение произошло успешно!")
