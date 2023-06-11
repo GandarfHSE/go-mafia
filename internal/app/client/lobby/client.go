@@ -1,11 +1,13 @@
 package client
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -24,8 +26,11 @@ type LobbyClient struct {
 
 	player proto.Player
 	w      *color.Color
+	reader *bufio.Reader
 
 	gameClient *client.GameClient
+	gameChan   chan struct{}
+	cmdChan    chan string
 }
 
 func CreateLobbyClient() *LobbyClient {
@@ -44,6 +49,9 @@ func CreateLobbyClient() *LobbyClient {
 		player:     proto.Player{},
 		w:          color.New(color.FgHiRed, color.Italic, color.Bold),
 		gameClient: nil,
+		gameChan:   make(chan struct{}),
+		cmdChan:    make(chan string),
+		reader:     bufio.NewReader(os.Stdin),
 	}
 }
 
@@ -70,7 +78,6 @@ func (c *LobbyClient) serveChat() {
 			continue
 		}
 		writer.Println(splittedMsg[1])
-		c.w.Print("> ")
 	}
 }
 
@@ -81,6 +88,7 @@ func (c *LobbyClient) WaitForGame() {
 	}
 
 	c.gameClient = client.CreateGameClient(resp.GameAddr, &c.player)
+	c.gameChan <- struct{}{}
 }
 
 func (c *LobbyClient) ConnectToLobby() {
@@ -118,6 +126,8 @@ func (c *LobbyClient) ConnectToLobby() {
 func (c *LobbyClient) Close() {
 	c.grpcConn.Close()
 	c.chatConn.Close()
+	close(c.cmdChan)
+	close(c.gameChan)
 }
 
 func (c *LobbyClient) Greet() {
@@ -127,14 +137,31 @@ func (c *LobbyClient) Greet() {
 	c.w.Printf("Здравствуй, %s!\n\n", c.player.Name)
 }
 
+func (c *LobbyClient) ReadCmd() (string, bool) {
+	go func() {
+		c.w.Print("Введите команду или сообщение в чат:\n")
+		txt, err := c.reader.ReadString('\n')
+		if err != nil {
+			log.Fatalf("LobbyClient::ReadCmd error: %v", err)
+		}
+		c.cmdChan <- strings.Join(strings.Fields(txt), " ")
+	}()
+
+	select {
+	case cmd := <-c.cmdChan:
+		return cmd, false
+	case <-c.gameChan:
+		return "", true
+	}
+}
+
 func (c *LobbyClient) Run() {
 	terminal.ClearScreen()
 	c.Greet()
 	c.ConnectToLobby()
+
 	for {
-		var cmd string
-		c.w.Print("Введите команду или сообщение в чат:\n> ")
-		fmt.Scan(&cmd)
+		cmd, _ := c.ReadCmd()
 
 		if c.gameClient != nil {
 			f := c.gameClient.Run()

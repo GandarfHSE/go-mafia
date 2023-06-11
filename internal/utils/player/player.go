@@ -3,6 +3,8 @@ package player
 import (
 	"fmt"
 	"net"
+
+	"github.com/GandarfHSE/go-mafia/internal/proto"
 )
 
 type Player struct {
@@ -12,6 +14,8 @@ type Player struct {
 
 	Role  string
 	Alive bool
+
+	GameEventChan chan *proto.GameEvent
 }
 
 // [TODO] make version with color

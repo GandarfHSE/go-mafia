@@ -20,12 +20,21 @@ message MemberListResponse {
     repeated string player_names = 1;
 }
 
+message AliveListResponse {
+    repeated string player_names = 1;
+    repeated int32 pids = 2;
+}
+
 message SendMessageRequest {
     string msg = 1;
     Player player = 2;
 }
 
 message ExitRequest {
+    Player player = 1;
+}
+
+message SubscribeToGameRequest {
     Player player = 1;
 }
 
@@ -41,6 +50,60 @@ message RoleResponse {
     string role = 1;
 }
 
+message VoteRequest {
+    Player player = 1;
+    int32 voting = 2;
+}
+
+message KillRequest {
+    Player player = 1;
+    int32 killing = 2;
+}
+
+message CheckRequest {
+    Player player = 1;
+    int32 checking = 2;
+}
+
+message CheckResponse {
+    string role = 1;
+}
+
+// Game events
+
+message DayChange {
+}
+
+message PlayerKilled {
+    string player = 1;
+}
+
+message PlayerJailed {
+    string player = 1;
+}
+
+message GameEnd {
+    string won = 1;
+    repeated string player_names = 2;
+    repeated string roles = 3;
+}
+
+message YouDead {
+}
+
+message GameEvent {
+    string type = 1;
+    oneof event {
+        DayChange day = 2;
+        PlayerKilled killed = 3;
+        PlayerJailed jailed = 4;
+        GameEnd end = 5;
+        YouDead dead = 6;
+    }
+}
+
+// service
+
 service Lobby {
     rpc Join(JoinRequest) returns (Empty);
     rpc MemberList(Empty) returns (MemberListResponse);
@@ -55,11 +118,10 @@ service Game {
     rpc SendMessage(SendMessageRequest) returns (Empty);
     rpc Exit(ExitRequest) returns (Empty);
 
+    rpc SubscribeToGameEvent(SubscribeToGameRequest) returns (stream GameEvent);
     rpc Role(RoleRequest) returns (RoleResponse);
-
-    // vote
-    // kill
-    // check
-    // show
-    // subscribe?
+    rpc Vote(VoteRequest) returns (Empty);
+    rpc Kill(KillRequest) returns (Empty);
+    rpc Check(CheckRequest) returns (CheckResponse);
+    rpc AliveList(Empty) returns (AliveListResponse);
 }

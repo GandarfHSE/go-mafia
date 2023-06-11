@@ -52,11 +52,12 @@ func (s *LobbyServer) addPlayer(pbplayer *proto.Player) error {
 	}
 
 	newPlayer := player.Player{
-		Name:  pbplayer.Name,
-		Addr:  pbplayer.Addr,
-		Conn:  conn,
-		Role:  "anon",
-		Alive: true,
+		Name:          pbplayer.Name,
+		Addr:          pbplayer.Addr,
+		Conn:          conn,
+		Role:          "anon",
+		Alive:         true,
+		GameEventChan: make(chan *proto.GameEvent),
 	}
 	s.players = append(s.players, newPlayer)
 
@@ -140,7 +141,7 @@ func (s *LobbyServer) Exit(_ context.Context, req *proto.ExitRequest) (*proto.Em
 	}
 
 	s.players = algo.Erase(s.players, pind)
-
+	s.gameWG.Add(1)
 	s.broadcastMsgFromPlayer(fmt.Sprintf("Игрок %v отключился!", req.Player.Name), req.Player.Addr, req.Player.Name)
 
 	return &proto.Empty{}, nil
@@ -176,9 +177,12 @@ func (s *LobbyServer) PrepareGame() {
 	grpcServer := grpc.NewServer()
 	proto.RegisterGameServer(grpcServer, gameServer)
 	go func() {
-		grpcServer.Serve(lis)
+		gameServer.Run()
 		gameServer.Close()
 	}()
-	s.broadcastMsgFromServer("Лобби заполнено, введите любое сообщение для перехода в игровую комнату...")
+	go func() {
+		grpcServer.Serve(lis)
+	}()
+	s.broadcastMsgFromServer("Лобби заполнено...")
 	s.players = nil
 }

@@ -255,7 +255,12 @@ type GameClient interface {
 	MemberList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MemberListResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*Empty, error)
 	Exit(ctx context.Context, in *ExitRequest, opts ...grpc.CallOption) (*Empty, error)
+	SubscribeToGameEvent(ctx context.Context, in *SubscribeToGameRequest, opts ...grpc.CallOption) (Game_SubscribeToGameEventClient, error)
 	Role(ctx context.Context, in *RoleRequest, opts ...grpc.CallOption) (*RoleResponse, error)
+	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*Empty, error)
+	Kill(ctx context.Context, in *KillRequest, opts ...grpc.CallOption) (*Empty, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error)
+	AliveList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AliveListResponse, error)
 }
 
 type gameClient struct {
@@ -293,9 +298,77 @@ func (c *gameClient) Exit(ctx context.Context, in *ExitRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *gameClient) SubscribeToGameEvent(ctx context.Context, in *SubscribeToGameRequest, opts ...grpc.CallOption) (Game_SubscribeToGameEventClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Game_ServiceDesc.Streams[0], "/mafiapb.Game/SubscribeToGameEvent", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &gameSubscribeToGameEventClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Game_SubscribeToGameEventClient interface {
+	Recv() (*GameEvent, error)
+	grpc.ClientStream
+}
+
+type gameSubscribeToGameEventClient struct {
+	grpc.ClientStream
+}
+
+func (x *gameSubscribeToGameEventClient) Recv() (*GameEvent, error) {
+	m := new(GameEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *gameClient) Role(ctx context.Context, in *RoleRequest, opts ...grpc.CallOption) (*RoleResponse, error) {
 	out := new(RoleResponse)
 	err := c.cc.Invoke(ctx, "/mafiapb.Game/Role", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/Vote", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) Kill(ctx context.Context, in *KillRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/Kill", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error) {
+	out := new(CheckResponse)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/Check", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameClient) AliveList(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AliveListResponse, error) {
+	out := new(AliveListResponse)
+	err := c.cc.Invoke(ctx, "/mafiapb.Game/AliveList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +382,12 @@ type GameServer interface {
 	MemberList(context.Context, *Empty) (*MemberListResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*Empty, error)
 	Exit(context.Context, *ExitRequest) (*Empty, error)
+	SubscribeToGameEvent(*SubscribeToGameRequest, Game_SubscribeToGameEventServer) error
 	Role(context.Context, *RoleRequest) (*RoleResponse, error)
+	Vote(context.Context, *VoteRequest) (*Empty, error)
+	Kill(context.Context, *KillRequest) (*Empty, error)
+	Check(context.Context, *CheckRequest) (*CheckResponse, error)
+	AliveList(context.Context, *Empty) (*AliveListResponse, error)
 	mustEmbedUnimplementedGameServer()
 }
 
@@ -326,8 +404,23 @@ func (UnimplementedGameServer) SendMessage(context.Context, *SendMessageRequest)
 func (UnimplementedGameServer) Exit(context.Context, *ExitRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exit not implemented")
 }
+func (UnimplementedGameServer) SubscribeToGameEvent(*SubscribeToGameRequest, Game_SubscribeToGameEventServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToGameEvent not implemented")
+}
 func (UnimplementedGameServer) Role(context.Context, *RoleRequest) (*RoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Role not implemented")
+}
+func (UnimplementedGameServer) Vote(context.Context, *VoteRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Vote not implemented")
+}
+func (UnimplementedGameServer) Kill(context.Context, *KillRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Kill not implemented")
+}
+func (UnimplementedGameServer) Check(context.Context, *CheckRequest) (*CheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
+}
+func (UnimplementedGameServer) AliveList(context.Context, *Empty) (*AliveListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AliveList not implemented")
 }
 func (UnimplementedGameServer) mustEmbedUnimplementedGameServer() {}
 
@@ -396,6 +489,27 @@ func _Game_Exit_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Game_SubscribeToGameEvent_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeToGameRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GameServer).SubscribeToGameEvent(m, &gameSubscribeToGameEventServer{stream})
+}
+
+type Game_SubscribeToGameEventServer interface {
+	Send(*GameEvent) error
+	grpc.ServerStream
+}
+
+type gameSubscribeToGameEventServer struct {
+	grpc.ServerStream
+}
+
+func (x *gameSubscribeToGameEventServer) Send(m *GameEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _Game_Role_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RoleRequest)
 	if err := dec(in); err != nil {
@@ -410,6 +524,78 @@ func _Game_Role_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GameServer).Role(ctx, req.(*RoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VoteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).Vote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/Vote",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).Vote(ctx, req.(*VoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_Kill_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KillRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).Kill(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/Kill",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).Kill(ctx, req.(*KillRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).Check(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/Check",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).Check(ctx, req.(*CheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Game_AliveList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServer).AliveList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mafiapb.Game/AliveList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServer).AliveList(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -437,7 +623,29 @@ var Game_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Role",
 			Handler:    _Game_Role_Handler,
 		},
+		{
+			MethodName: "Vote",
+			Handler:    _Game_Vote_Handler,
+		},
+		{
+			MethodName: "Kill",
+			Handler:    _Game_Kill_Handler,
+		},
+		{
+			MethodName: "Check",
+			Handler:    _Game_Check_Handler,
+		},
+		{
+			MethodName: "AliveList",
+			Handler:    _Game_AliveList_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeToGameEvent",
+			Handler:       _Game_SubscribeToGameEvent_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "mafia.proto",
 }

@@ -11,13 +11,13 @@ func PrintRole(role string) {
 	switch role {
 	case "civ":
 		wr = color.New(color.FgHiGreen, color.Bold)
-		wr.Printf("Ваша роль: Мирный житель!\n")
+		wr.Print("Мирный житель")
 	case "maf":
 		wr = color.New(color.FgHiBlack, color.BgHiRed, color.Bold)
-		wr.Printf("Ваша роль: Мафия!\n")
+		wr.Print("Мафия")
 	case "com":
 		wr = color.New(color.FgHiCyan, color.Bold)
-		wr.Printf("Ваша роль: Комиссар!\n")
+		wr.Print("Комиссар")
 	default:
 		log.Printf("Unknown role: %v", role)
 	}
