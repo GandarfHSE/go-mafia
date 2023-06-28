@@ -9,4 +9,4 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8085:8085"
-      - "9000-11000:9000-11000"
+      - "9000-9100:9000-9100"

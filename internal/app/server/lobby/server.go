@@ -179,7 +179,7 @@ func (s *LobbyServer) PrepareGame() {
 
 	for i := 0; i < 5; i++ {
 		// [TODO] Get this from config
-		port := 9000 + rnd.Uint32()%2000
+		port := 9000 + rnd.Uint32()%100
 		s.gameAddr = fmt.Sprintf(":%v", port)
 		lis, err = net.Listen("tcp", s.gameAddr)
 		if err == nil {
