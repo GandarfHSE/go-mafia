@@ -46,6 +46,12 @@ func (s *LobbyServer) Close() {
 }
 
 func (s *LobbyServer) addPlayer(pbplayer *proto.Player) error {
+	for _, p := range s.players {
+		if p.Name == pbplayer.Name {
+			return errors.New("Игрок с таким именем уже существует!")
+		}
+	}
+
 	conn, err := net.Dial("udp", pbplayer.Addr)
 	if err != nil {
 		log.Printf("Can't add player %v with addr %v!\n", pbplayer.Name, pbplayer.Addr)

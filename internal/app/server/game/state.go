@@ -9,34 +9,38 @@ type GameState struct {
 	s   *GameServer
 	Day bool
 
-	VotedTotal int
-	Votes      []int
-	VotesCount []int
-	VoteChan   chan int
-	Killed     int
-	KillChan   chan int
-	Checked    int
-	CheckChan  chan int
+	VotedTotal      int
+	Votes           []int
+	VotesCount      []int
+	VoteChan        chan int
+	Killed          int
+	KillChan        chan int
+	Checked         int
+	CheckChan       chan int
+	CheckChanClosed bool
 }
 
 func (s *GameState) Close() {
 	close(s.VoteChan)
 	close(s.KillChan)
-	close(s.CheckChan)
+	if !s.CheckChanClosed {
+		close(s.CheckChan)
+	}
 }
 
 func CreateGameState(s *GameServer) *GameState {
 	return &GameState{
-		s:          s,
-		Day:        true,
-		VotedTotal: 0,
-		Votes:      make([]int, 4),
-		VotesCount: make([]int, 4),
-		VoteChan:   make(chan int),
-		Killed:     -1,
-		KillChan:   make(chan int, 1),
-		Checked:    -1,
-		CheckChan:  make(chan int, 1),
+		s:               s,
+		Day:             true,
+		VotedTotal:      0,
+		Votes:           make([]int, 4),
+		VotesCount:      make([]int, 4),
+		VoteChan:        make(chan int),
+		Killed:          -1,
+		KillChan:        make(chan int, 1),
+		Checked:         -1,
+		CheckChan:       make(chan int, 1),
+		CheckChanClosed: false,
 	}
 }
 

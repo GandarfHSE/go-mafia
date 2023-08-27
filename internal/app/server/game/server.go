@@ -18,7 +18,8 @@ type GameServer struct {
 	players []player.Player
 	mu      sync.Mutex
 
-	state *GameState
+	state  *GameState
+	closed bool
 }
 
 func CreateGameServer(Players []player.Player) *GameServer {
@@ -32,8 +33,10 @@ func CreateGameServer(Players []player.Player) *GameServer {
 		Players[i].Role = role
 	}
 
+	playersCopy := make([]player.Player, len(Players))
+	copy(playersCopy, Players)
 	s := &GameServer{
-		players: Players,
+		players: playersCopy,
 		state:   nil,
 	}
 	s.state = CreateGameState(s)
@@ -95,9 +98,13 @@ func (s *GameServer) Run() {
 }
 
 func (s *GameServer) Close() {
+	if s.closed {
+		return
+	}
+
 	log.Println("Closing game server...")
+	s.closed = true
 	for _, p := range s.players {
-		//s.killPlayer(i)
 		close(p.GameEventChan)
 	}
 	s.state.Close()
@@ -105,6 +112,9 @@ func (s *GameServer) Close() {
 
 func (s *GameServer) SubscribeToGameEvent(req *proto.SubscribeToGameRequest, event_stream proto.Game_SubscribeToGameEventServer) error {
 	pind := s.getPid(req.Player)
+	if pind == -1 {
+		return errors.New("SubscribeToGameEvent: player not found!")
+	}
 
 	for {
 		e, ok := <-s.players[pind].GameEventChan
@@ -117,7 +127,7 @@ func (s *GameServer) SubscribeToGameEvent(req *proto.SubscribeToGameRequest, eve
 
 func (s *GameServer) getPid(pl *proto.Player) int {
 	for i, p := range s.players {
-		if pl.Addr == p.Addr && pl.Name == p.Name {
+		if pl.Name == p.Name {
 			return i
 		}
 	}
@@ -189,8 +199,10 @@ func (s *GameServer) Exit(_ context.Context, req *proto.ExitRequest) (*proto.Emp
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.killPlayer(s.getPid(req.Player))
-	s.broadcastMsgFromPlayer(fmt.Sprintf("Игрок %v отключился!", req.Player.Name), req.Player.Addr, req.Player.Name)
+	if !s.closed {
+		s.killPlayer(s.getPid(req.Player))
+		s.broadcastMsgFromPlayer(fmt.Sprintf("Игрок %v отключился!", req.Player.Name), req.Player.Addr, req.Player.Name)
+	}
 
 	return &proto.Empty{}, nil
 }
@@ -209,6 +221,7 @@ func (s *GameServer) killPlayer(pid int) bool {
 	s.state.TryFinishVote()
 	s.players[pid].GameEventChan <- &proto.GameEvent{Type: "dead", Event: &proto.GameEvent_Dead{}}
 	if s.players[pid].Role == "com" {
+		s.state.CheckChanClosed = true
 		close(s.state.CheckChan)
 	}
 	return true
